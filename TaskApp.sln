@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32922.545
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaskApp.Api", "TaskApp.Api\TaskApp.Api.csproj", "{FE63E127-CDC4-4EF7-BCDC-52FDD2BA926E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskApp.Domain", "TaskApp.Domain\TaskApp.Domain.csproj", "{AA2E74D0-8975-4D9F-8F12-6C283BA80175}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FE63E127-CDC4-4EF7-BCDC-52FDD2BA926E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE63E127-CDC4-4EF7-BCDC-52FDD2BA926E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE63E127-CDC4-4EF7-BCDC-52FDD2BA926E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE63E127-CDC4-4EF7-BCDC-52FDD2BA926E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA2E74D0-8975-4D9F-8F12-6C283BA80175}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA2E74D0-8975-4D9F-8F12-6C283BA80175}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA2E74D0-8975-4D9F-8F12-6C283BA80175}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA2E74D0-8975-4D9F-8F12-6C283BA80175}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DC9DF5AA-B551-4131-AB86-C9485505E2E5}
+	EndGlobalSection
+EndGlobal
