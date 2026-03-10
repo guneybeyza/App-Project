@@ -5,3 +5,4 @@
 /.vs
 /TaskApp.Api/obj
 /TaskApp.Domain/obj
+/TaskApp.Infrastructure/obj
