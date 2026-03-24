@@ -5,3 +5,8 @@
 /.vs
 /TaskApp.Api/obj
 /TaskApp.Domain/obj
+/TaskApp.Infrastructure/obj
+/TaskApp.Infrastructure/bin/Debug/net6.0
+/TaskApp.Domain/bin/Debug/net6.0
+/TaskApp.Api/bin/Debug/net6.0
+/.dotnet
