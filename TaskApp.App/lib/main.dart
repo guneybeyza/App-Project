@@ -55,15 +55,15 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   void _login() {
-    final username = _usernameController.text;
-    if (username.isNotEmpty) {
+    final email = _emailController.text;
+    if (email.isNotEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Hoşgeldin, $username!'),
+          content: Text('Hoşgeldin, $email!'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -72,7 +72,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void dispose() {
-    _usernameController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -117,10 +117,10 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 32),
                     TextField(
-                      controller: _usernameController,
+                      controller: _emailController,
                       decoration: InputDecoration(
-                        labelText: 'Kullanıcı Adı',
-                        prefixIcon: const Icon(Icons.person),
+                        labelText: 'E-posta',
+                        prefixIcon: const Icon(Icons.email),
                         filled: true,
                         fillColor: Colors.grey.shade100,
                         border: OutlineInputBorder(
@@ -201,12 +201,14 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   void _register() {
-    if (_usernameController.text.isNotEmpty) {
+    if (_nameController.text.isNotEmpty && 
+        _passwordController.text == _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Kayıt başarılı! Giriş yapabilirsiniz.'),
@@ -214,14 +216,22 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
       );
       Navigator.pop(context);
+    } else if (_passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Şifreler uyuşmuyor!'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
-    _usernameController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -264,10 +274,10 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     const SizedBox(height: 32),
                     TextField(
-                      controller: _emailController,
+                      controller: _nameController,
                       decoration: InputDecoration(
-                        labelText: 'E-posta',
-                        prefixIcon: const Icon(Icons.email),
+                        labelText: 'Ad Soyad',
+                        prefixIcon: const Icon(Icons.badge_outlined),
                         filled: true,
                         fillColor: Colors.grey.shade100,
                         border: OutlineInputBorder(
@@ -278,10 +288,10 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     const SizedBox(height: 16),
                     TextField(
-                      controller: _usernameController,
+                      controller: _emailController,
                       decoration: InputDecoration(
-                        labelText: 'Kullanıcı Adı',
-                        prefixIcon: const Icon(Icons.person),
+                        labelText: 'E-posta',
+                        prefixIcon: const Icon(Icons.email),
                         filled: true,
                         fillColor: Colors.grey.shade100,
                         border: OutlineInputBorder(
@@ -297,6 +307,21 @@ class _RegisterPageState extends State<RegisterPage> {
                       decoration: InputDecoration(
                         labelText: 'Şifre',
                         prefixIcon: const Icon(Icons.lock),
+                        filled: true,
+                        fillColor: Colors.grey.shade100,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _confirmPasswordController,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        labelText: 'Şifre Tekrar',
+                        prefixIcon: const Icon(Icons.lock_reset),
                         filled: true,
                         fillColor: Colors.grey.shade100,
                         border: OutlineInputBorder(
