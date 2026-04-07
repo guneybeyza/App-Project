@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:taskapp_app/widgets/shared_widgets.dart';
 
@@ -46,14 +48,41 @@ class _RegisterPageState extends State<RegisterPage>
       _showSnack('Şifreler uyuşmuyor!', isError: true);
       return;
     }
+    
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 1200));
-    setState(() => _isLoading = false);
-    if (!mounted) return;
-    _showSnack('Kayıt başarılı! 🎉');
-    await Future.delayed(const Duration(milliseconds: 900));
-    if (!mounted) return;
-    Navigator.pop(context);
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://localhost:7062/api/User'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'name': _nameController.text.trim(),
+          'email': _emailController.text.trim(),
+          'password': _passwordController.text.trim(),
+        }),
+      );
+
+      setState(() => _isLoading = false);
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        if (!mounted) return;
+        _showSnack('Kayıt başarılı! 🎉 Lütfen giriş yapın.');
+        await Future.delayed(const Duration(milliseconds: 1200));
+        if (!mounted) return;
+        Navigator.pop(context);
+      } else {
+        if (!mounted) return;
+        var errorMsg = 'Kayıt başarısız oldu.';
+        try {
+          errorMsg = jsonDecode(response.body)['message'] ?? errorMsg;
+        } catch (_) {}
+        _showSnack(errorMsg, isError: true);
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (!mounted) return;
+      _showSnack('Bağlantı hatası: $e', isError: true);
+    }
   }
 
   void _showSnack(String msg, {bool isError = false}) {
