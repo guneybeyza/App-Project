@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:taskapp_app/pages/dashboard_page.dart';
 import 'package:taskapp_app/pages/register_page.dart';
@@ -45,22 +47,47 @@ class _LoginPageState extends State<LoginPage>
     }
 
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 1200));
-    setState(() => _isLoading = false);
 
-    if (!mounted) return;
+    try {
+      final response = await http.post(
+        Uri.parse('https://localhost:7062/api/User/authenticate'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+        }),
+      );
 
-    final name = email.contains('@') ? email.split('@')[0] : email;
+      setState(() => _isLoading = false);
 
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (_, animation, __) => FadeTransition(
-          opacity: animation,
-          child: DashboardPage(userName: name),
-        ),
-        transitionDuration: const Duration(milliseconds: 500),
-      ),
-    );
+      if (response.statusCode == 200) {
+        if (!mounted) return;
+        
+        final data = jsonDecode(response.body);
+        final name = data['name'] ?? email;
+
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            pageBuilder: (_, animation, __) => FadeTransition(
+              opacity: animation,
+              child: DashboardPage(userName: name),
+            ),
+            transitionDuration: const Duration(milliseconds: 500),
+          ),
+        );
+      } else {
+        if (!mounted) return;
+        var errorMsg = 'Giriş başarısız oldu.';
+        try {
+          errorMsg = jsonDecode(response.body)['message'] ?? errorMsg;
+        } catch (_) {}
+        _showSnack(errorMsg, isError: true);
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (!mounted) return;
+      _showSnack('Bağlantı hatası: $e', isError: true);
+    }
   }
 
   void _showSnack(String msg, {bool isError = false}) {
