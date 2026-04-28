@@ -65,12 +65,14 @@ class _LoginPageState extends State<LoginPage>
         
         final data = jsonDecode(response.body);
         final name = data['name'] ?? email;
+        final userId = data['id'] ?? 0;
+        final userEmail = data['email'] ?? email;
 
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
             pageBuilder: (_, animation, __) => FadeTransition(
               opacity: animation,
-              child: DashboardPage(userName: name),
+              child: DashboardPage(userName: name, userId: userId, userEmail: userEmail),
             ),
             transitionDuration: const Duration(milliseconds: 500),
           ),

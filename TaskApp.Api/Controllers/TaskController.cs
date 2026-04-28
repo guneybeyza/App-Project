@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 using TaskApp.Domain;
 using TaskApp.Infrastructure.Repositories.Interfaces;
 using TaskEntity = TaskApp.Domain.Task;
@@ -32,6 +33,33 @@ public class TaskController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, new { message = "Görevleri alırken hata oluştu", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Kullanıcı ID'sine göre tüm görevleri getirir
+    /// </summary>
+    [HttpGet("user/{userId}")]
+    public async Task<ActionResult<IReadOnlyList<TaskEntity>>> GetTasksByUserId(int userId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Kullanıcının projelerini bul
+            var projects = await _projectRepository.FindAsync(p => p.UserId == userId, cancellationToken);
+            var projectIds = projects.Select(p => p.Id).ToList();
+
+            if (!projectIds.Any())
+            {
+                return Ok(new List<TaskEntity>());
+            }
+
+            // Bu projelere ait görevleri bul
+            var tasks = await _taskRepository.FindAsync(t => projectIds.Contains(t.ProjectId), cancellationToken);
+            return Ok(tasks);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Kullanıcı görevleri alınırken hata oluştu", error = ex.Message });
         }
     }
 
