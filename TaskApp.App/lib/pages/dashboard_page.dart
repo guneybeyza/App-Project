@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:taskapp_app/models/task_model.dart';
 import 'package:taskapp_app/pages/login_page.dart';
+import 'package:taskapp_app/pages/projects_page.dart';
 import 'package:taskapp_app/widgets/shared_widgets.dart';
 
 class DashboardPage extends StatefulWidget {
   final String userName;
-  const DashboardPage({super.key, required this.userName});
+  final int userId;
+  const DashboardPage(
+      {super.key, required this.userName, required this.userId});
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -64,8 +67,7 @@ class _DashboardPageState extends State<DashboardPage>
     super.initState();
     _animController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 700));
-    _fadeAnim =
-        CurvedAnimation(parent: _animController, curve: Curves.easeOut);
+    _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
     _animController.forward();
   }
 
@@ -159,21 +161,31 @@ class _DashboardPageState extends State<DashboardPage>
               automaticallyImplyLeading: false,
               actions: [
                 IconButton(
+                  icon: const Icon(Icons.folder_open, color: Colors.white),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => ProjectsPage(
+                          userId: widget.userId,
+                          userName: widget.userName,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                IconButton(
                   icon: const Icon(Icons.notifications_outlined,
                       color: Colors.white),
                   onPressed: () {},
                 ),
                 IconButton(
-                  icon:
-                      const Icon(Icons.logout_rounded, color: Colors.white),
+                  icon: const Icon(Icons.logout_rounded, color: Colors.white),
                   onPressed: () {
                     Navigator.of(context).pushReplacement(
                       PageRouteBuilder(
                         pageBuilder: (_, animation, __) => FadeTransition(
-                            opacity: animation,
-                            child: const LoginPage()),
-                        transitionDuration:
-                            const Duration(milliseconds: 400),
+                            opacity: animation, child: const LoginPage()),
+                        transitionDuration: const Duration(milliseconds: 400),
                       ),
                     );
                   },
@@ -199,12 +211,9 @@ class _DashboardPageState extends State<DashboardPage>
                             children: [
                               CircleAvatar(
                                 radius: 24,
-                                backgroundColor:
-                                    Colors.white.withOpacity(0.25),
+                                backgroundColor: Colors.white.withOpacity(0.25),
                                 child: Text(
-                                  widget.userName
-                                      .substring(0, 1)
-                                      .toUpperCase(),
+                                  widget.userName.substring(0, 1).toUpperCase(),
                                   style: const TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w800,
@@ -213,8 +222,7 @@ class _DashboardPageState extends State<DashboardPage>
                               ),
                               const SizedBox(width: 14),
                               Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     'Merhaba, ${widget.userName} 👋',
@@ -226,8 +234,7 @@ class _DashboardPageState extends State<DashboardPage>
                                   Text(
                                     _greetingText(),
                                     style: TextStyle(
-                                        color:
-                                            Colors.white.withOpacity(0.75),
+                                        color: Colors.white.withOpacity(0.75),
                                         fontSize: 13),
                                   ),
                                 ],
@@ -252,19 +259,18 @@ class _DashboardPageState extends State<DashboardPage>
                                       Text(
                                         'Günlük İlerleme',
                                         style: TextStyle(
-                                            color: Colors.white
-                                                .withOpacity(0.8),
+                                            color:
+                                                Colors.white.withOpacity(0.8),
                                             fontSize: 12,
                                             fontWeight: FontWeight.w500),
                                       ),
                                       const SizedBox(height: 6),
                                       ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(4),
+                                        borderRadius: BorderRadius.circular(4),
                                         child: LinearProgressIndicator(
                                           value: _completionRatio,
-                                          backgroundColor: Colors.white
-                                              .withOpacity(0.2),
+                                          backgroundColor:
+                                              Colors.white.withOpacity(0.2),
                                           valueColor:
                                               const AlwaysStoppedAnimation(
                                                   Colors.white),
@@ -355,8 +361,7 @@ class _DashboardPageState extends State<DashboardPage>
                   final task = _tasks[index];
                   return _TaskCard(
                     task: task,
-                    onToggle: () =>
-                        setState(() => task.isDone = !task.isDone),
+                    onToggle: () => setState(() => task.isDone = !task.isDone),
                   );
                 },
                 childCount: _tasks.length,
@@ -385,8 +390,7 @@ class _DashboardPageState extends State<DashboardPage>
         destinations: const [
           NavigationDestination(
               icon: Icon(Icons.home_outlined),
-              selectedIcon:
-                  Icon(Icons.home_rounded, color: Color(0xFF667eea)),
+              selectedIcon: Icon(Icons.home_rounded, color: Color(0xFF667eea)),
               label: 'Ana Sayfa'),
           NavigationDestination(
               icon: Icon(Icons.bar_chart_outlined),
@@ -395,8 +399,8 @@ class _DashboardPageState extends State<DashboardPage>
               label: 'İstatistik'),
           NavigationDestination(
               icon: Icon(Icons.calendar_today_outlined),
-              selectedIcon: Icon(Icons.calendar_today_rounded,
-                  color: Color(0xFF667eea)),
+              selectedIcon:
+                  Icon(Icons.calendar_today_rounded, color: Color(0xFF667eea)),
               label: 'Takvim'),
           NavigationDestination(
               icon: Icon(Icons.person_outline_rounded),
@@ -444,9 +448,8 @@ class _TaskCard extends StatelessWidget {
               height: 28,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: task.isDone
-                    ? const Color(0xFF2ECC71)
-                    : Colors.transparent,
+                color:
+                    task.isDone ? const Color(0xFF2ECC71) : Colors.transparent,
                 border: Border.all(
                   color: task.isDone
                       ? const Color(0xFF2ECC71)
@@ -465,9 +468,8 @@ class _TaskCard extends StatelessWidget {
             style: TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 15,
-              color: task.isDone
-                  ? Colors.grey.shade400
-                  : const Color(0xFF1A1A2E),
+              color:
+                  task.isDone ? Colors.grey.shade400 : const Color(0xFF1A1A2E),
               decoration: task.isDone ? TextDecoration.lineThrough : null,
             ),
           ),
@@ -495,8 +497,8 @@ class _TaskCard extends StatelessWidget {
                     size: 12, color: Colors.grey.shade400),
                 const SizedBox(width: 3),
                 Text(task.time,
-                    style: TextStyle(
-                        color: Colors.grey.shade400, fontSize: 12)),
+                    style:
+                        TextStyle(color: Colors.grey.shade400, fontSize: 12)),
               ],
             ),
           ),
@@ -556,8 +558,7 @@ class _StatCard extends StatelessWidget {
                     fontWeight: FontWeight.w800,
                     color: Color(0xFF1A1A2E))),
             Text(label,
-                style:
-                    TextStyle(color: Colors.grey.shade400, fontSize: 12)),
+                style: TextStyle(color: Colors.grey.shade400, fontSize: 12)),
           ],
         ),
       ),

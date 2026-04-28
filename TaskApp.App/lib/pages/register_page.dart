@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:taskapp_app/widgets/shared_widgets.dart';
 
+const String _apiBaseUrl = 'http://localhost:5062';
+
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
 
@@ -29,8 +31,7 @@ class _RegisterPageState extends State<RegisterPage>
     super.initState();
     _animController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 800));
-    _fadeAnim =
-        CurvedAnimation(parent: _animController, curve: Curves.easeOut);
+    _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
     _slideAnim = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero)
         .animate(
             CurvedAnimation(parent: _animController, curve: Curves.easeOut));
@@ -48,12 +49,12 @@ class _RegisterPageState extends State<RegisterPage>
       _showSnack('Şifreler uyuşmuyor!', isError: true);
       return;
     }
-    
+
     setState(() => _isLoading = true);
 
     try {
       final response = await http.post(
-        Uri.parse('https://localhost:7062/api/User'),
+        Uri.parse('$_apiBaseUrl/api/User'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'name': _nameController.text.trim(),
@@ -143,8 +144,7 @@ class _RegisterPageState extends State<RegisterPage>
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color:
-                                    const Color(0xFFFF6584).withOpacity(0.4),
+                                color: const Color(0xFFFF6584).withOpacity(0.4),
                                 blurRadius: 20,
                                 offset: const Offset(0, 6),
                               )

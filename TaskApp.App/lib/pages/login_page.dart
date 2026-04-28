@@ -5,6 +5,8 @@ import 'package:taskapp_app/pages/dashboard_page.dart';
 import 'package:taskapp_app/pages/register_page.dart';
 import 'package:taskapp_app/widgets/shared_widgets.dart';
 
+const String _apiBaseUrl = 'http://localhost:5062';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -28,10 +30,8 @@ class _LoginPageState extends State<LoginPage>
     super.initState();
     _animController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 800));
-    _fadeAnim =
-        CurvedAnimation(parent: _animController, curve: Curves.easeOut);
-    _slideAnim = Tween<Offset>(
-            begin: const Offset(0, 0.1), end: Offset.zero)
+    _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
+    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero)
         .animate(
             CurvedAnimation(parent: _animController, curve: Curves.easeOut));
     _animController.forward();
@@ -50,7 +50,7 @@ class _LoginPageState extends State<LoginPage>
 
     try {
       final response = await http.post(
-        Uri.parse('https://localhost:7062/api/User/authenticate'),
+        Uri.parse('$_apiBaseUrl/api/User/authenticate'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'email': email,
@@ -62,15 +62,16 @@ class _LoginPageState extends State<LoginPage>
 
       if (response.statusCode == 200) {
         if (!mounted) return;
-        
+
         final data = jsonDecode(response.body);
         final name = data['name'] ?? email;
+        final userId = data['id'] ?? 0;
 
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
             pageBuilder: (_, animation, __) => FadeTransition(
               opacity: animation,
-              child: DashboardPage(userName: name),
+              child: DashboardPage(userId: userId, userName: name),
             ),
             transitionDuration: const Duration(milliseconds: 500),
           ),
@@ -209,8 +210,7 @@ class _LoginPageState extends State<LoginPage>
                           children: [
                             Text('Hesabın yok mu?',
                                 style: TextStyle(
-                                    color: Colors.grey.shade500,
-                                    fontSize: 14)),
+                                    color: Colors.grey.shade500, fontSize: 14)),
                             TextButton(
                               onPressed: () => Navigator.push(
                                 context,
