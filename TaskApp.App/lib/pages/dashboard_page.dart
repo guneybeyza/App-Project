@@ -1,11 +1,23 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:taskapp_app/models/task_model.dart';
 import 'package:taskapp_app/pages/login_page.dart';
+import 'package:taskapp_app/pages/projects_page.dart';
+import 'package:taskapp_app/pages/profile_page.dart';
+import 'package:taskapp_app/pages/tasks_page.dart';
 import 'package:taskapp_app/widgets/shared_widgets.dart';
 
 class DashboardPage extends StatefulWidget {
   final String userName;
-  const DashboardPage({super.key, required this.userName});
+  final int userId;
+  final String userEmail;
+  const DashboardPage({
+    super.key,
+    required this.userName,
+    required this.userId,
+    required this.userEmail,
+  });
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -18,46 +30,8 @@ class _DashboardPageState extends State<DashboardPage>
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
 
-  final List<Task> _tasks = [
-    Task(
-      title: 'UI tasarım revizyonu',
-      category: 'Tasarım',
-      categoryColor: Color(0xFF667eea),
-      time: '09:00',
-    ),
-    Task(
-      title: 'Haftalık rapor hazırla',
-      category: 'İş',
-      categoryColor: Color(0xFFFF8E53),
-      time: '11:30',
-    ),
-    Task(
-      title: 'Backend API entegrasyonu',
-      category: 'Geliştirme',
-      categoryColor: Color(0xFF2ECC71),
-      time: '14:00',
-      isDone: true,
-    ),
-    Task(
-      title: 'Müşteri toplantısı',
-      category: 'Toplantı',
-      categoryColor: Color(0xFFFF6584),
-      time: '15:00',
-    ),
-    Task(
-      title: 'Unit testleri yaz',
-      category: 'Geliştirme',
-      categoryColor: Color(0xFF2ECC71),
-      time: '16:30',
-    ),
-    Task(
-      title: 'Pazar araştırması',
-      category: 'Araştırma',
-      categoryColor: Color(0xFF764ba2),
-      time: '10:00',
-      isDone: true,
-    ),
-  ];
+  List<Task> _tasks = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -67,6 +41,56 @@ class _DashboardPageState extends State<DashboardPage>
     _fadeAnim =
         CurvedAnimation(parent: _animController, curve: Curves.easeOut);
     _animController.forward();
+    _fetchTasks();
+  }
+
+  Future<void> _fetchTasks() async {
+    setState(() => _isLoading = true);
+    try {
+      final response = await http.get(Uri.parse('https://localhost:7062/api/Task/user/${widget.userId}'));
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        if (mounted) {
+          final now = DateTime.now();
+          final today = DateTime(now.year, now.month, now.day);
+          
+          setState(() {
+            _tasks = data.map((json) => Task.fromJson(json)).where((task) {
+              if (task.dueDate == null) return false;
+              final taskDate = task.dueDate!.toLocal();
+              return taskDate.year == today.year && 
+                     taskDate.month == today.month && 
+                     taskDate.day == today.day;
+            }).toList();
+            _isLoading = false;
+          });
+        }
+      } else {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    } catch (e) {
+      debugPrint('Dashboard görev çekme hatası: $e');
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _toggleTaskStatus(Task task) async {
+    final newStatus = task.isDone ? 'Pending' : 'Completed';
+    try {
+      final response = await http.patch(
+        Uri.parse('https://localhost:7062/api/Task/${task.id}/status'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'status': newStatus}),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          task.isDone = !task.isDone;
+        });
+      }
+    } catch (e) {
+      debugPrint('Durum güncellenemedi: $e');
+    }
   }
 
   @override
@@ -86,61 +110,7 @@ class _DashboardPageState extends State<DashboardPage>
     return 'İyi akşamlar! 🌙';
   }
 
-  void _showAddTaskDialog(BuildContext context) {
-    final titleController = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Yeni Görev',
-            style: TextStyle(fontWeight: FontWeight.w800)),
-        content: TextField(
-          controller: titleController,
-          autofocus: true,
-          decoration: InputDecoration(
-            hintText: 'Görev başlığı...',
-            filled: true,
-            fillColor: Colors.grey.shade100,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('İptal')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF667eea),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-            ),
-            onPressed: () {
-              if (titleController.text.trim().isNotEmpty) {
-                setState(() {
-                  _tasks.insert(
-                    0,
-                    Task(
-                      title: titleController.text.trim(),
-                      category: 'Genel',
-                      categoryColor: const Color(0xFF667eea),
-                      time:
-                          '${TimeOfDay.now().hour}:${TimeOfDay.now().minute.toString().padLeft(2, '0')}',
-                    ),
-                  );
-                });
-              }
-              Navigator.pop(context);
-            },
-            child: const Text('Ekle'),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -148,8 +118,20 @@ class _DashboardPageState extends State<DashboardPage>
       backgroundColor: const Color(0xFFF4F6FB),
       body: FadeTransition(
         opacity: _fadeAnim,
-        child: CustomScrollView(
-          slivers: [
+        child: _selectedIndex == 1
+            ? ProjectsPage(userId: widget.userId)
+            : _selectedIndex == 2
+                ? TasksPage(userId: widget.userId)
+                : _selectedIndex == 3
+                    ? ProfilePage(
+                        userId: widget.userId,
+                        userName: widget.userName,
+                        userEmail: widget.userEmail,
+                      )
+                    : RefreshIndicator(
+                        onRefresh: _fetchTasks,
+                        child: CustomScrollView(
+                            slivers: [
             // ── App Bar ──
             SliverAppBar(
               expandedHeight: 200,
@@ -349,37 +331,46 @@ class _DashboardPageState extends State<DashboardPage>
             ),
 
             // ── Task List ──
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final task = _tasks[index];
-                  return _TaskCard(
-                    task: task,
-                    onToggle: () =>
-                        setState(() => task.isDone = !task.isDone),
-                  );
-                },
-                childCount: _tasks.length,
-              ),
-            ),
+            _isLoading
+                ? const SliverToBoxAdapter(
+                    child: Center(
+                        child: Padding(
+                      padding: EdgeInsets.all(40),
+                      child: CircularProgressIndicator(),
+                    )),
+                  )
+                : _tasks.isEmpty
+                    ? const SliverToBoxAdapter(
+                        child: Center(
+                            child: Padding(
+                          padding: EdgeInsets.all(40),
+                          child: Text('Henüz görev yok.'),
+                        )),
+                      )
+                    : SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final task = _tasks[index];
+                            return _TaskCard(
+                              task: task,
+                              onToggle: () => _toggleTaskStatus(task),
+                            );
+                          },
+                          childCount: _tasks.length,
+                        ),
+                      ),
 
-            // ── Add Task Button ──
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
-                child: GradientButton(
-                  label: '+ Yeni Görev Ekle',
-                  onPressed: () => _showAddTaskDialog(context),
-                  isLoading: false,
-                ),
-              ),
-            ),
+
           ],
         ),
       ),
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
-        onDestinationSelected: (i) => setState(() => _selectedIndex = i),
+        onDestinationSelected: (i) {
+          setState(() => _selectedIndex = i);
+          if (i == 0) _fetchTasks();
+        },
         backgroundColor: Colors.white,
         indicatorColor: const Color(0xFF667eea).withOpacity(0.12),
         destinations: const [
@@ -389,15 +380,15 @@ class _DashboardPageState extends State<DashboardPage>
                   Icon(Icons.home_rounded, color: Color(0xFF667eea)),
               label: 'Ana Sayfa'),
           NavigationDestination(
-              icon: Icon(Icons.bar_chart_outlined),
+              icon: Icon(Icons.folder_outlined),
               selectedIcon:
-                  Icon(Icons.bar_chart_rounded, color: Color(0xFF667eea)),
-              label: 'İstatistik'),
+                  Icon(Icons.folder_rounded, color: Color(0xFF667eea)),
+              label: 'Projeler'),
           NavigationDestination(
-              icon: Icon(Icons.calendar_today_outlined),
-              selectedIcon: Icon(Icons.calendar_today_rounded,
+              icon: Icon(Icons.task_alt_outlined),
+              selectedIcon: Icon(Icons.task_alt_rounded,
                   color: Color(0xFF667eea)),
-              label: 'Takvim'),
+              label: 'Görevler'),
           NavigationDestination(
               icon: Icon(Icons.person_outline_rounded),
               selectedIcon:
